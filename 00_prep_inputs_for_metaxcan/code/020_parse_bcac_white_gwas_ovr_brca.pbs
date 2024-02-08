@@ -1,0 +1,29 @@
+#!/bin/bash
+#PBS -N parse_bcac_overall_
+#PBS -S /bin/bash
+#PBS -l walltime=12:00:00
+#PBS -l mem=16gb
+#PBS -l nodes=1:ppn=1
+
+#PBS -j oe
+#PBS -o logs/${PBS_JOBNAME}.o${PBS_JOBID}.log
+
+module load gcc/6.2.0
+module load python/3.5.3
+
+cd $PBS_O_WORKDIR
+
+python3 /gpfs/data/gao-lab/Julian/software/summary-gwas-imputation/src/gwas_parsing.py \
+-gwas_file ../input/oncoarray_bcac_public_release_oct17.txt.gz \
+-output_column_map phase3_1kg_id variant_id \
+-output_column_map a1 effect_allele \
+-output_column_map a0 non_effect_allele \
+-output_column_map bcac_onco_icogs_gwas_beta effect_size \
+-output_column_map bcac_onco_icogs_gwas_se standard_error \
+-output_column_map bcac_onco_icogs_gwas_eaf_controls frequency \
+-output_column_map chr chromosome --chromosome_format -output_column_map position_b37 position \
+-output_column_map bcac_onco_icogs_gwas_P1df pvalue \
+-output_order variant_id panel_variant_id chromosome position effect_allele non_effect_allele frequency pvalue zscore effect_size standard_error sample_size n_cases \
+-liftover ../input/hg19ToHg38.over.chain.gz \
+-snp_reference_metadata ../input/gtex_v8_eur_filtered_maf0.01_monoallelic_variants.txt.gz METADATA \
+-output ../output/metaxcan_gwas_parse/BCAC_Overall_BreastCancer_EUR.txt.gz

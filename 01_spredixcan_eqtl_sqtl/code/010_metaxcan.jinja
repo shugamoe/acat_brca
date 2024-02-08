@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH --job-name={{job_name}}
+#SBATCH --time={{job_walltime}}
+#SBATCH --mem={{job_memory}}
+#SBATCH --nodes=1
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task={{ n_cpu }}
+#SBATCH --output={{logs_folder}}/{% raw %}%x.o%j.log{% endraw %}
+
+# gardner
+# module load gcc/6.2.0
+# {% if python_version %}module load python/{{python_version}}{% else %}module load python/2.7.13{% endif %}
+
+# randi
+module load gcc/12.1.0
+module load miniconda3/23.1.0
+source activate /gpfs/data/gao-lab/Julian/software/envs/metaxcan
+export PATH=/gpfs/data/gao-lab/Julian/software/envs/metaxcan/bin:$PATH
+
+
+export MKL_NUM_THREADS={{ n_cpu }}
+export OPEN_BLAS_NUM_THREADS={{ n_cpu }}
+export NUMEXPR_NUM_THREADS={{ n_cpu }}
+export OMP_NUM_THREADS={{ n_cpu }}
+
+{% raw %}cd $SLURM_SUBMIT_DIR {% endraw %}
+
+{{ command }} \
+{% if gwas_file %}{{ gwas_file }}{% else %}{{gwas_folder}} {{gwas_file_pattern}}{% endif %} \
+{{ __unnamed }} \
+{{ model }} \
+{{ model_db_snp_key }} \
+{{ keep_non_rsid }} \
+{{ single_snp_model }} \
+{{ covariance }} \
+{{ extra }} \
+--throw \
+{{ output }}

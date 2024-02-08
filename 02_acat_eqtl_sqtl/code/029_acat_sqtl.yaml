@@ -1,0 +1,119 @@
+---
+definitions:
+  command: "python3 /gpfs/data/gao-lab/Julian/software/MetaXcan/software/SMulTiXcanByFeature.py"
+
+  template: 029_acat_sqtl.jinja
+  default_arguments:
+    job_memory: "16gb"
+    job_walltime: "4:00:00"
+    logs_folder: logs/acat_sqtl
+    n_cpu: "1"
+    python_version: "3.5.3"
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/acat_sqtl
+      job_name_key: job_name
+      # fake_submission: true
+
+  constants:
+    - &CUTOFF_CONDITION_NUMBER "30"
+    - &GWAS_FOLDER ../../00_prep_inputs_for_metaxcan/output/metaxcan_gwas_imputed/
+    - &SQTL_ALL_MODELS ../input/combine_sqtl.db
+    - &ALL_COVAR ../input/combine_cross_intron_covar.txt.gz
+    - &FULL_PHENO_MAP ../input/combine_phenotype_groups.txt.gz GTEx_sQTL
+    - &INTRON_ID_MAPPING_FOLDER ../input/by_tiss_phenotype_groups
+    - &COMBINED_SQTL_ASSOC ../input/acat_prep_sqtl
+    - &RESULTS_FOLDER ../output/acat_sqtl
+    - &TISSUE_LISTS ../input/tissue_lists
+    - &WHITELIST /gpfs/data/huo-lab/jmcclellan/acat_brca_combined/00_prep_inputs_for_metaxcan/input/study_whitelists/master_whitelist.txt
+
+  #Kind of ugly kink... need to add support for configurable inline template to pick up from configuration, to avoid duplicating "results"
+  pre_command:
+  - '[ -d ../output/acat_sqtl ] || mkdir -p ../output/acat_sqtl'
+
+
+arguments:
+
+########################################################################################################################
+
+  - !Scalar { name: verbosity, prefix: "--verbosity", value: "10" }
+  - !Scalar { name: acat, value: "--acat" }
+  - !Scalar { name: tiss_rank, value: "--tiss_rank" }
+
+  - !Scalar { name: cutoff_condition_number, prefix: "--cutoff_condition_number", value: *CUTOFF_CONDITION_NUMBER,
+    metadata_rules: [ !SaveValueInMetadata { path: run/condition_number } ]
+   }
+
+########################################################################################################################
+
+  - !FilesInFolder
+    name: gwas_file
+    prefix: --gwas_file
+    sort: true
+    folder: *GWAS_FOLDER
+    regexp_filter: "(.*).txt.gz"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: gwas/tag } ]
+
+  - !FilesInFolder
+    name: tiss_list
+    prefix: --tiss_list
+    sort: true
+    folder: *TISSUE_LISTS
+    regexp_filter: "(.*).txt"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: tiss_list } ]
+
+  - !Scalar {value: "--snp_column panel_variant_id --effect_allele_column effect_allele --non_effect_allele_column non_effect_allele --zscore_column zscore "}
+
+########################################################################################################################
+
+  - !Scalar {name: model_db_path, prefix: "--model_db_path", value: *SQTL_ALL_MODELS}
+    # - !FilesInFolder
+    # - name: model_db_path
+    # - prefix: --model_db_path
+    # - sort: true
+    # - folder: *MODEL_FOLDER
+    # - regexp_filter: "mashr_(.*).db"
+    # - metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: model/name } ]
+
+  - !Scalar {name: extra, value: "--keep_non_rsid --model_db_snp_key varID"}
+
+  - !Scalar {name: covariance, prefix: "--covariance", value: *ALL_COVAR}
+    # - !ArgumentFromMetadata
+    # - name: covariance
+    # - prefix: --covariance
+    # - prepend: *MODEL_FOLDER
+    # - format_rule: "mashr_{model_name}.txt.gz"
+    # - sources: [ { path: model/name, destination: model_name} ]
+
+########################################################################################################################
+
+  - !Scalar {name: grouping, prefix: --grouping, value: *FULL_PHENO_MAP}
+
+  - !ArgumentFromMetadata
+    name: associations
+    prefix: --associations
+    prepend: *COMBINED_SQTL_ASSOC
+    format_rule: "{study}_sqtl_acat_input.csv SPrediXcan"
+    sources: [ { path: gwas/tag, destination: study }]
+
+########################################################################################################################
+
+  - !ArgumentFromMetadata
+    name: output
+    prefix: "--output"
+    prepend: *RESULTS_FOLDER
+    format_rule: "{tiss_list}__{study}_sqtl_acat_results.tsv"
+    sources: [
+      { path: gwas/tag, destination: study },
+      { path: tiss_list, destination: tiss_list}
+
+    ]
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "{tiss_list}___{study}_sqtl_acat_results"
+    sources: [
+      { path: gwas/tag, destination: study },
+      { path: tiss_list, destination: tiss_list}
+    ]

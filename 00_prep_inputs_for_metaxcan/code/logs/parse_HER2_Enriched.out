@@ -1,0 +1,16 @@
+INFO - Parsing input GWAS
+/gpfs/data/gao-lab/Julian/software/summary-gwas-imputation/src/gwas_parsing.py:311: DtypeWarning: Columns (1,4,5,20,23,24,39,40) have mixed types. Specify dtype option on import or set low_memory=False.
+  run(args)
+INFO - Calculating zscore from se and beta
+INFO - loaded 9965310 variants
+INFO - Performing liftover
+INFO - 9965310 variants after liftover
+INFO - Creating index to attach reference ids
+INFO - Acquiring reference metadata
+INFO - alligning alleles
+INFO - 8205761 variants after restricting to reference variants
+INFO - Ensuring variant uniqueness
+INFO - 8205680 variants after ensuring uniqueness
+INFO - Checking for missing frequency entries
+INFO - Saving...
+INFO - Finished converting GWAS in 926.0001374650747 seconds

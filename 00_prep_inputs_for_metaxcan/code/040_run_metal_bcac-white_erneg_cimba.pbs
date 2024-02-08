@@ -1,0 +1,31 @@
+#!/bin/bash
+
+### Set the name of the job, where jobname is a unique name for your job
+#PBS -N metal_cimba-brca1_bcac
+ 
+### Select the shell you would like the script to execute within
+#PBS -S /bin/bash
+ 
+### Inform the scheduler of the expected runtime, where walltime=DD:HH:MM:SS
+#PBS -l walltime=:24:00:00
+ 
+### Inform the scheduler of the number of CPU cores for your job.
+#PBS -l nodes=1:ppn=1
+ 
+### Inform the scheduler of the amount of memory you expect to use.
+### Use units of 'b', 'kb', 'mb', or 'gb'
+#PBS -l mem=16gb
+ 
+### Set the destination for your program's output.
+#PBS -o logs/
+
+### Standard Error and Output to same file
+#PBS -j oe
+
+module load gcc/6.2.0
+module load zlib/1.2.8
+module load metal/2011.03.25
+cd $PBS_O_WORKDIR
+
+metal < scripts/metal_bcac-white_erneg_cimba.txt
+mv final_metal_bcac-white_erneg_cimba* ../output/metal

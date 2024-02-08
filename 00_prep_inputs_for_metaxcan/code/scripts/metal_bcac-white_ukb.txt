@@ -1,0 +1,36 @@
+#!/bin/bash
+
+#GENOMICCONTROL ON # automatically correct test statistics to account for small
+                  # amounts of population stratification or unaccounted for relatedness
+SCHEME STDERR # Sample size weighted analysis = SAMPLESIZE | SE based analysis = STDERR
+AVERAGEFREQ ON
+MINMAXFREQ ON
+
+### input data ###
+# BCAC (oncoarray_bcac_public_release_oct17.txt.gz)
+# Using Combined Oncoarray, iCOGs GWAS meta analysis
+SEPARATOR TAB # WHITESPACE # - the default
+MARKER var_name # CHR_POS_A0_A1 
+ALLELE a1 a0 # (ref then nonref allele) a1=effect, a0=ref
+FREQ bcac_onco_icogs_gwas_eaf_controls
+EFFECT bcac_onco_icogs_gwas_beta
+PVALUE bcac_onco_icogs_gwas_P1df
+STDERR bcac_onco_icogs_gwas_se # bcac_onco_icogs_gwas_se #SE 
+PROCESS ../input/oncoarray_bcac_public_release_oct17.txt.gz
+
+## UKBiobank breast cancer for overal for all cases (including prevalence and occured after entry) ##
+SEPARATOR WHITESPACE   # - the default
+MARKER var_name # Built in prep section to match var_name in BCAC
+ALLELE ALT REF # ALT is effect allele
+FREQ EAF
+EFFECT beta_ALT
+PVALUE P 
+STDERR SE
+PROCESS ../input/Anno_res_anyBC_full_chrom.breast.logistic.gz
+
+### Analysis parameters ###
+
+OUTFILE final_metal_bcac-white_ukb .txt
+ANALYZE HETEROGENEITY # requires a second pass of analysis to decide whether
+                      # observed effect sizes (or test statistics) are homogeneous across samples.
+QUIT

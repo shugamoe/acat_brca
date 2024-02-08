@@ -1,0 +1,18 @@
+#!/bin/bash
+#PBS -N focus_preproc_gwas
+#PBS -S /bin/bash
+#PBS -l walltime=04:00:00
+#PBS -l mem=16gb
+#PBS -l nodes=1:ppn=1
+#PBS -j oe
+#PBS -o logs/${PBS_JOBNAME}.log
+#######################################################################################################################
+#CRI submission dandruff
+
+module load gcc/6.2.0
+module load miniconda3/4.7.10
+source activate /gpfs/data/gao-lab/Julian/software/envs/parsl
+
+cd $PBS_O_WORKDIR
+
+python3 00_format_gwas.py

@@ -1,0 +1,135 @@
+stty: standard input: Invalid argument
+MetaAnalysis Helper - (c) 2007 - 2009 Goncalo Abecasis
+This version released on 2011-03-25
+
+# This program faciliates meta-analysis of genome-wide association studies.
+# Commonly used commands are listed below:
+#
+# Options for describing input files ...
+#   SEPARATOR        [WHITESPACE|COMMA|BOTH|TAB] (default = WHITESPACE)
+#   COLUMNCOUNTING   [STRICT|LENIENT]            (default = 'STRICT')
+#   MARKERLABEL      [LABEL]                     (default = 'MARKER')
+#   ALLELELABELS     [LABEL1 LABEL2]             (default = 'ALLELE1','ALLELE2')
+#   EFFECTLABEL      [LABEL|log(LABEL)]          (default = 'EFFECT')
+#   FLIP
+#
+# Options for filtering input files ...
+#   ADDFILTER        [LABEL CONDITION VALUE]     (example = ADDFILTER N > 10)
+#                    (available conditions are <, >, <=, >=, =, !=, IN)
+#   REMOVEFILTERS
+#
+# Options for sample size weighted meta-analysis ...
+#   WEIGHTLABEL      [LABEL]                     (default = 'N')
+#   PVALUELABEL      [LABEL]                     (default = 'PVALUE')
+#   DEFAULTWEIGHT    [NUMBER]                    (default = 1.0)
+#   MINWEIGHT        [NUMBER]                    (default = 1.0)
+#
+# Options for inverse variance weighted meta-analysis ...
+#   STDERRLABEL      [LABEL]                     (default = 'STDERR')
+#   SCHEME           [SAMPLESIZE|STDERR]         (default = SAMPLESIZE)
+#
+# Options to enable tracking of allele frequencies ...
+#   AVERAGEFREQ      [ON|OFF]                    (default = OFF)
+#   MINMAXFREQ       [ON|OFF]                    (default = OFF)
+#   FREQLABEL        [LABEL]                     (default = 'FREQ')
+#
+# Options to enable tracking of user defined variables ...
+#   CUSTOMVARIABLE   [VARNAME]
+#   LABEL            [VARNAME] AS [HEADER]
+#
+# Options to enable explicit strand information ...
+#   USESTRAND        [ON|OFF]                    (default = OFF)
+#   STRANDLABEL      [LABEL]                     (default = 'STRAND')
+#
+# Automatic genomic control correction of input statistics ...
+#   GENOMICCONTROL   [ON|OFF|VALUE|LIST snps.txt](default = OFF)
+#
+# Options for general analysis control ...
+#   PROCESSFILE      [FILENAME]
+#   OUTFILE          [PREFIX SUFFIX]             (default = 'METAANALYSIS','.TBL')
+#   MAXWARNINGS      [NUMBER]                    (default = 20)
+#   VERBOSE          [ON|OFF]                    (default = 'OFF')
+#   LOGPVALUE        [ON|OFF]                    (default = 'OFF')
+#   ANALYZE          [HETEROGENEITY]
+#   CLEAR
+
+# Options for general run control ...
+#   SOURCE           [SCRIPTFILE]
+#   RETURN
+#   QUIT
+
+## Meta-analysis will be based on effect sizes and their standard errors ...
+## Averaging of allele frequencies enabled
+## Tracking of extreme allele frequencies enabled
+## Set column separator to TAB ...
+## Set marker header to var_name ...
+## Set allele headers to onco_icogs_effect and onco_icogs_baseline ...
+## Set frequency header to onco_icogs_bc_freq ...
+## Set effect header to onco_icogs_bc_effect ...
+## Set p-value header to onco_icogs_bc_pval ...
+## Set standard error header to onco_icogs_bc_se ...
+## Failed to open file '../input/cimba_onco_icogs_brca1_combined_results.txt'
+## Set column separator to TAB ...
+## Set marker header to var_name ...
+## Set allele headers to a1 and a0 ...
+## Set frequency header to bcac_onco_icogs_gwas_erneg_eaf_controls ...
+## Set effect header to bcac_onco_icogs_gwas_erneg_beta ...
+## Set p-value header to bcac_onco_icogs_gwas_erneg_P1df ...
+## Set standard error header to bcac_onco_icogs_gwas_erneg_se ...
+###########################################################################
+## Processing file '../input/oncoarray_bcac_public_release_oct17.txt.gz'
+## WARNING: Invalid standard error for marker 1_855949_G_A, ignored
+## WARNING: Invalid standard error for marker 1_856042_C_T, ignored
+## WARNING: Invalid standard error for marker 1_857653_C_G, ignored
+## WARNING: Invalid standard error for marker 1_862822_G_GC, ignored
+## WARNING: Invalid standard error for marker 1_864241_C_T, ignored
+## WARNING: Invalid standard error for marker 1_871808_CCGGT_C, ignored
+## WARNING: Invalid standard error for marker 1_12735718_C_A, ignored
+## WARNING: Invalid standard error for marker 1_12817913_A_G, ignored
+## WARNING: Invalid standard error for marker 1_25511417_C_A, ignored
+## WARNING: Invalid standard error for marker 1_25707146_C_A, ignored
+## WARNING: Invalid standard error for marker 1_25968650_C_A, ignored
+## WARNING: Invalid standard error for marker 1_26123405_A_G, ignored
+## WARNING: Invalid standard error for marker 1_31562856_AGGCCAGGGGCCAGG_A, ignored
+## WARNING: Invalid standard error for marker 1_33091135_AAAAAC_A, ignored
+## WARNING: Invalid standard error for marker 1_35260618_C_G, ignored
+## WARNING: Invalid standard error for marker 1_36826110_CATTTTATTTT_C, ignored
+## WARNING: Invalid standard error for marker 1_37077946_G_A, ignored
+## WARNING: Invalid standard error for marker 1_37248750_G_A, ignored
+## WARNING: Invalid standard error for marker 1_37251512_G_A, ignored
+## WARNING: Invalid standard error for marker 1_38843510_A_ACAC, ignored
+## WARNING: Invalid standard errors for 720 other markers also ignored
+## Processed 11791802 markers ...
+
+## Set output file prefix and suffix to final_metal_bcac-white_erneg_cimba and .txt ...
+###########################################################################
+## Running second pass analysis to evaluate heterogeneity...
+## Processing file '../input/oncoarray_bcac_public_release_oct17.txt.gz'
+
+###########################################################################
+## Executing meta-analysis ...
+## Complete results will be stored in file 'final_metal_bcac-white_erneg_cimba1.txt'
+## Column descriptions will be stored in file 'final_metal_bcac-white_erneg_cimba1.txt.info'
+## Completed meta-analysis for 11791802 markers!
+## Smallest p-value is 3.597e-40 at marker '6_151952332_G_A'
+
+## Clearing all stored statistics ...
+# Clearing user defined filters ...
+
+
+------------ Job WrapUp ------------
+
+Job ID:            36826046.cri16sc001
+User ID:           jmcclellan
+Job Name:          metal_cimba-brca1_bcac
+Queue Name:        standard
+Working Directory: /gpfs/data/huo-lab/jmcclellan/acat_brca_combined/00_prep_inputs_for_metaxcan/code
+Resource List:     walltime=24:00:00,nodes=1:ppn=1,mem=16gb,neednodes=1:ppn=1
+Resources Used:    cput=00:06:51,vmem=4054072kb,walltime=00:06:53,mem=3730696kb,energy_used=0
+Exit Code:         0
+Mother Superior:   cri16cn030
+
+Execution Nodes: 
+cri16cn030
+
+

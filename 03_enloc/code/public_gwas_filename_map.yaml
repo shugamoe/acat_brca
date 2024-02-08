@@ -1,0 +1,13 @@
+"name":
+  #"BCAC_ER_negative_BreastCancer_EUR": "BCAC_ER_negative_BreastCancer_EUR"
+  #"UKB_Breast_cancer": "UKB_Breast_cancer"
+  #"BCAC_ER_positive_BreastCancer_EUR": "BCAC_ER_positive_BreastCancer_EUR"
+  "BCAC_Overall_BreastCancer_EUR": "BCAC_Overall_BreastCancer_EUR"
+  "meta_analysis_BCAC_UKB_ovr_brca": "meta_analysis_BCAC_UKB_ovr_brca"
+  "BCAC_ERPOS_BreastCancer_EUR": "BCAC_ERPOS_BreastCancer_EUR"
+  "meta_analysis_BCAC_CIMBA_erneg_brca": "meta_analysis_BCAC_CIMBA_erneg_brca"
+  "intrinsic_subtype_1": "intrinsic_subtype_1"
+  "intrinsic_subtype_2": "intrinsic_subtype_2"
+  "intrinsic_subtype_3": "intrinsic_subtype_3"
+  "intrinsic_subtype_4": "intrinsic_subtype_4"
+  "intrinsic_subtype_5": "intrinsic_subtype_5"

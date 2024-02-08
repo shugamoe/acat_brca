@@ -1,0 +1,69 @@
+---
+definitions:
+  command: "python3 /gpfs/data/gao-lab/Julian/software/summary-gwas-imputation/src/slice_gwas_by_region.py"
+  template: 010_slice_gwas.jinja
+
+  copy_to_item: true
+
+  default_arguments:
+    job_memory: "4gb"
+    job_walltime: "4:00:00"
+    n_cpu: "1"
+    python_version: "3.5.3"
+    logs_folder: logs/slice_gwas
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/slice_gwas
+      job_name_key: job_name
+      # fake_submission: true
+
+  constants:
+    - &GWAS_FOLDER ../../00_prep_inputs_for_metaxcan/output/metaxcan_gwas_imputed/
+    - &RESULTS_FOLDER ../input/sliced_gwas/
+
+  #Kind of ugly kink... need to add support for configurable inline template to pick up from configuration, to avoid duplicating "results"
+  pre_command:
+      - '[ -d ../input/sliced_gwas ] || mkdir -p ../input/sliced_gwas'
+
+arguments:
+
+  - !FilesInFolder
+    name: gwas_file
+    prefix: -gwas_file
+    sort: true
+    folder: *GWAS_FOLDER
+    regexp_filter: "(.*).txt.gz"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: gwas/tag } ]
+
+  - !Scalar {name: region_file, value: "-region_file ../../00_prep_inputs_for_metaxcan/input/eur_ld.bed.gz"}
+  - !Scalar {name: parsimony, value: "-parsimony 8"}
+
+
+########################################################################################################################
+
+  - !ArgumentFromMetadata
+    {name: job_memory, sub_key: memory, options_from_metadata_path: __configuration/enloc_eqtl_tissue_info,
+    sources: [ {path: tissue/name} ]}
+
+  - !ArgumentFromMetadata
+    {name: job_walltime, sub_key: walltime, options_from_metadata_path: __configuration/enloc_eqtl_tissue_info,
+    sources: [ {path: tissue/name} ]}
+
+########################################################################################################################
+
+  - !ArgumentFromMetadata
+    name: output
+    prefix: -output
+    format_rule: "../input/sliced_gwas/{gwas}.sliced.gz"
+    sources: [
+      {path: gwas/tag, destination: gwas}
+    ]
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "slice_{gwas}"
+    sources:
+    sources: [
+      {path: gwas/tag, destination: gwas}
+    ]

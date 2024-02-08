@@ -1,0 +1,77 @@
+---
+definitions:
+  #command: /home/numa/Documents/Projects/metaxcan/MetaXcan/software/SMulTiXcanByFeature.py
+  command: "python3 /gpfs/data/gao-lab/Julian/software/MetaXcan/software/spredixcan_splicing_merge.py"
+
+  template: 020_acat_prep_sqtl.jinja
+  default_arguments:
+    job_memory: "16gb"
+    job_walltime: "4:00:00"
+    logs_folder: logs/acat_prep_sqtl
+    n_cpu: "1"
+    python_version: "3.5.3"
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/acat_prep_sqtl
+      job_name_key: job_name
+      # fake_submission: true
+
+  constants:
+    - &CUTOFF_CONDITION_NUMBER "30"
+    - &GWAS_FOLDER ../../00_prep_inputs_for_metaxcan/output/metaxcan_gwas_imputed/
+    - &SQTL_FOLDER ../../01_spredixcan_eqtl_sqtl/output/spredixcan_sqtl_mashr/
+    - &TISSUE_LISTS ../input/tissue_lists
+    - &RESULTS_FOLDER ../input/acat_prep_sqtl/
+
+  #Kind of ugly kink... need to add support for configurable inline template to pick up from configuration, to avoid duplicating "results"
+  pre_command:
+  - '[ -d ../input/acat_prep_sqtl ] || mkdir -p ../input/acat_prep_sqtl'
+
+
+arguments:
+
+  - !FilesInFolder
+    name: gwas_file
+    prefix: --gwas_file
+    sort: true
+    folder: *GWAS_FOLDER
+    regexp_filter: "(.*).txt.gz"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: gwas/tag } ]
+
+        #   - !FilesInFolder
+        #     name: tiss_list
+        #     prefix: --tiss_list
+        #     sort: true
+        #     folder: *TISSUE_LISTS
+        #     regexp_filter: "(.*).txt"
+        #     metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: tiss_list } ]
+
+        # - &SQTL_FOLDER ../../01_spredixcan_eqtl_sqtl/output/spredixcan_sqtl_mashr/
+  - !ArgumentFromMetadata
+    name: spred_sqtl_pattern 
+    prefix: --spred_sqtl_pattern
+    format_rule: '"../../01_spredixcan_eqtl_sqtl/output/spredixcan_sqtl_mashr/spredixcan_igwas_gtexmashrv8_{study}*.csv"'
+    sources: [ { path: gwas/tag, destination: study}
+    ]
+
+  - !ArgumentFromMetadata
+    name: output
+    prefix: "--output"
+    prepend: *RESULTS_FOLDER
+    format_rule: "{study}_sqtl_acat_input.csv"
+    sources: [
+      { path: gwas/tag, destination: study },
+    ]
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "{study}_acat_sqtl_input"
+    sources: [
+      { path: gwas/tag, destination: study }
+    ]
+
+
+########################################################################################################################
+
+

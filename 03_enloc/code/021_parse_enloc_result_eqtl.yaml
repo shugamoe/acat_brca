@@ -1,0 +1,51 @@
+---
+definitions:
+  command:  ''
+
+  template: 021_parse_enloc_result_eqtl.jinja
+  default_arguments:
+    job_memory: "4gb"
+    job_walltime: "4:00:00"
+    logs_folder: logs/parse_enloc_result_eqtl
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/parse_enloc_result_eqtl
+      job_name_key: job_name
+      #fake_submission: true
+      #crude_submission: true
+
+  constants:
+    key: &KEY_K ../input/gencode_key_name.txt.gz
+    # key: &KEY_K /gpfs/data/gao-lab/splicing_data_results/cp_abarbeira/projects/gtex_v8/data_formatting/gencode_key_name.txt.gz
+    input_folder: &INPUT_FOLDER ../output/enloc_eqtl
+    output_folder: &OUTPUT_FOLDER ../output/parse_enloc_result_eqtl
+
+  pre_command:
+  - '[ -d ../output/parse_enloc_result_eqtl ] || mkdir -p ../output/parse_enloc_result_eqtl'
+
+arguments:
+  - !Scalar { name: key, value: *KEY_K}
+
+  - !FilesInFolder
+    name: input
+    sort: true
+    folder: *INPUT_FOLDER
+    regexp_filter: "(.*).enloc.rst"
+    metadata_rules:
+      - !ExtractFromFileNameRegexpMetadata
+        path: trait_tissue
+      - !ExtractFromValueWithRegexpMetadata
+        regexp: ".*__PM__(.*).enloc.rst"
+        path: tissue
+
+  - !ArgumentFromMetadata
+    name: output
+    prepend: *OUTPUT_FOLDER
+    format_rule: "{trait_tissue}.enloc.rst.gz"
+    sources: [ {path: trait_tissue, destination: trait_tissue} ]
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "parse_enloc_{trait_tissue}"
+    sources: [ { path: trait_tissue, destination: trait_tissue } ]

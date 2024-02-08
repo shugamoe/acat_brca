@@ -1,0 +1,80 @@
+---
+definitions:
+  #command: /home/numa/Documents/Projects/metaxcan/MetaXcan/software/SMulTiXcanByFeature.py
+  command: "python3 /gpfs/data/gao-lab/Julian/software/MetaXcan/software/spredixcan_expression_acat.py"
+
+  template: 010_acat_eqtl.jinja
+  default_arguments:
+    job_memory: "16gb"
+    job_walltime: "4:00:00"
+    logs_folder: logs/acat_eqtl
+    n_cpu: "1"
+    python_version: "3.5.3"
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/acat_eqtl
+      job_name_key: job_name
+      # fake_submission: true
+
+  constants:
+    - &CUTOFF_CONDITION_NUMBER "30"
+    - &GWAS_FOLDER ../../00_prep_inputs_for_metaxcan/output/metaxcan_gwas_imputed/
+    - &EQTL_FOLDER ../../01_spredixcan_eqtl_sqtl/output/spredixcan_eqtl_mashr/
+    - &RESULTS_FOLDER ../output/acat_eqtl/
+    - &TISSUE_LISTS ../input/tissue_lists
+
+  #Kind of ugly kink... need to add support for configurable inline template to pick up from configuration, to avoid duplicating "results"
+  pre_command:
+  - '[ -d ../output/acat_eqtl ] || mkdir -p ../output/acat_eqtl'
+
+
+arguments:
+
+  - !FilesInFolder
+    name: gwas_file
+    prefix: --gwas_file
+    sort: true
+    folder: *GWAS_FOLDER
+    regexp_filter: "(.*).txt.gz"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: gwas/tag } ]
+
+  - !FilesInFolder
+    name: tiss_list
+    prefix: --tiss_list
+    sort: true
+    folder: *TISSUE_LISTS
+    regexp_filter: "(.*).txt"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata { path: tiss_list } ]
+
+  - !Scalar {name: results_dir, prefix: "--results_dir", value: *EQTL_FOLDER}
+
+  - !ArgumentFromMetadata
+    name: 
+    prefix: --study_pattern
+    format_rule: '"spredixcan_igwas_gtexmashrv8_{study}*"'
+    sources: [ { path: gwas/tag, destination: study }]
+
+  - !ArgumentFromMetadata
+    name: output
+    prefix: "--output"
+    prepend: *RESULTS_FOLDER
+    format_rule: "{tiss_list}__{study}_eqtl_acat_results.tsv"
+    sources: [
+      { path: gwas/tag, destination: study },
+      { path: tiss_list, destination: tiss_list}
+    ]
+
+
+#- !Whitelist { name: whitelist, in_metadata_path: "gwas/tag", from_list: [ "metaxcan_rdy_AD_UKB_meta", "metaxcan_rdy_AD_UKB_GWAS", "metaxcan_rdy_AD_UKB_GWAX" ] }
+
+########################################################################################################################
+
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "{tiss_list}___{study}_acat_eqtl"
+    sources: [
+      { path: gwas/tag, destination: study },
+      { path: tiss_list, destination: tiss_list}
+    ]

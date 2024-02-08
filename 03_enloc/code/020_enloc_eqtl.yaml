@@ -1,0 +1,95 @@
+---
+definitions:
+  command: "#perl bin/enloc"
+  template: 020_enloc.jinja
+
+  copy_to_item: true
+
+  default_arguments:
+    job_memory: "4gb"
+    job_walltime: "4:00:00"
+    logs_folder: logs/enloc_eqtl
+
+  submission:
+    !SLURMQueue
+      jobs_folder: jobs/enloc_eqtl
+      job_name_key: job_name
+      #fake_submission: true
+
+  constants:
+    bin: &BIN_K /gpfs/data/gao-lab/Julian/software/enloc_bin
+    dapg_runs: &DAPG_RUNS_K /scratch/jmcclellan/dapg/eqtl/results/collapsed_dapg/
+    gwas: &SLICED_GWAS_K ../input/sliced_gwas/
+    whitelist: &WHITELIST /gpfs/data/huo-lab/jmcclellan/acat_brca_combined/02_acat_eqtl_sqtl/input/tissue_lists/11tiss.txt
+    output_folder: &OUTPUT_FOLDER_K ../output/enloc_eqtl
+
+  #Kind of ugly kink... need to add support for configurable inline template to pick up from configuration, to avoid duplicating "results"
+  pre_command:
+  - '[ -d ../output/enloc_eqtl ] || mkdir -p ../output/enloc_eqtl'
+
+sub_configuration:
+  -
+    how: before_arguments
+    path: 020_enloc_eqtl_tissue_spec.yaml
+
+arguments:
+  - !Scalar { name: bin, value: *BIN_K }
+
+  - !Scalar { name: FOLDER, value: *OUTPUT_FOLDER_K }
+
+  - !FilesInFolder
+    name: tissue_folder
+    sort: true
+    folder: *DAPG_RUNS_K
+    regexp_filter: "(.*)"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata {path: tissue/name} ]
+
+  - !FilesInFolder
+    name: gwas_path
+    sort: true
+    folder: *SLICED_GWAS_K
+    regexp_filter: "(.*).sliced.gz"
+    metadata_rules: [ !ExtractFromFileNameRegexpMetadata {path: gwas/tag} ]
+
+########################################################################################################################
+
+  - !ArgumentFromMetadata
+    {name: job_memory, sub_key: memory, options_from_metadata_path: __configuration/enloc_eqtl_tissue_info,
+    sources: [ {path: tissue/name} ]}
+
+  - !ArgumentFromMetadata
+    {name: job_walltime, sub_key: walltime, options_from_metadata_path: __configuration/enloc_eqtl_tissue_info,
+    sources: [ {path: tissue/name} ]}
+
+########################################################################################################################
+
+  - !ArgumentFromMetadata
+    name: gwas_name
+    format_rule: "{gwas}"
+    sources: [ {path: gwas/tag, destination: gwas} ]
+
+  - !Whitelist { name: whitelist, in_metadata_path: "tissue/name", list_from_file: *WHITELIST }
+
+  - !ArgumentFromMetadata
+    name: output_key
+    format_rule: "{gwas}__PM__{tissue}"
+    sources: [
+      {path: tissue/name, destination: tissue},
+      {path: gwas/tag, destination: gwas}
+    ]
+    metadata_rules: [ !SaveValueInMetadata {path: "output_key"} ]
+
+  - !ArgumentFromMetadata
+    name: output_folder
+    prepend: *OUTPUT_FOLDER_K
+    format_rule: "{output_key}"
+    sources: [ {path: output_key, destination: output_key} ]
+
+  - !ArgumentFromMetadata
+    name: "job_name"
+    format_rule: "{gwas}__PM__{tissue}_enloc_eqtl_gtexv8"
+    sources:
+    sources: [
+      {path: tissue/name, destination: tissue},
+      {path: gwas/tag, destination: gwas}
+    ]

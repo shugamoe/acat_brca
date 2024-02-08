@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -N metal_and_rsid
+#PBS -S /bin/bash
+#PBS -l walltime=04:00:00
+#PBS -l mem=32gb
+#PBS -l nodes=1:ppn=1
+#PBS -o logs/${PBS_JOBNAME}.o${PBS_JOBID}.log
+### Standard Error and Output to same file
+#PBS -j oe
+
+#######################################################################################################################
+#CRI submission dandruff
+
+module load gcc/6.2.0
+module load miniconda3/4.7.10
+source activate /gpfs/data/gao-lab/Julian/software/envs/parsl
+
+cd $PBS_O_WORKDIR
+
+Rscript 999_add_rsid_col_to_ukb_bcac_metal_results.R 
