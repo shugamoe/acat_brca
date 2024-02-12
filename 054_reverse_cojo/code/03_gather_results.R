@@ -7,6 +7,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 	require(tidyverse)
 	require(data.table)
 	require(glue)
+	require(readxl)
 
 	if (file.exists(glue("../output/results_long/{gwas_type}_all_results.tsv"))){
 		return()
@@ -161,6 +162,11 @@ prelim_join_results <- function(gwas_type="ERPOS"){
 	}
 
 	write_tsv(return_df, glue("../output/results_long/{gwas_type}_no_clump_or_highest_clump_r2.tsv"))
+	if (gwas_type == "ERPOS"){
+	  og_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S3", range="A2:G791")
+	} else if (gwas_type == "ERNEG"){
+		og_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S4", range="A2:G791")
+	}
 	for (cond_type in COND_TYPES){
 		# return_df_wide <- return_df %>%
 		# 	pivot_wider(names_from=c(gtex_cond_type), values_from=c("zC", "pC", "in_conditioning_set")) %>%
@@ -170,7 +176,7 @@ prelim_join_results <- function(gwas_type="ERPOS"){
 			filter(gtex_cond_type == cond_type) %>%
 			select(-gtex_cond_type)
 
-		write_tsv(left_join(gwas_type_master_df %>% select(-all_of(c("chr_num", "chromosome"))), return_df_ctype %>% mutate(`Locus` = str_replace(Locus, "_", " "))), glue("../output/results_wide/joined_to_s3s4/{gwas_type}_gtex_{cond_type}_COJO_joined_to_original_sup_tables.tsv"))
+		write_tsv(left_join(og_master, return_df_ctype %>% mutate(`Locus` = str_replace(Locus, "_", " "))), glue("../output/results_wide/joined_to_s3s4/{gwas_type}_gtex_{cond_type}_COJO_joined_to_original_sup_tables.tsv"))
 	}
 }
 
