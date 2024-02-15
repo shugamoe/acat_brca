@@ -42,7 +42,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 										 zC = bC / bC_se,
 										 pC = 2 * pnorm(-abs(bC / bC_se))
 										 ) %>%
-							select(`SNP`, `z`, `zC`, `p`, `pC`)
+							select(`SNP`, `b`, `bC`, `z`, `zC`, `p`, `pC`)
 						if (file.exists(olap_path)){
 							olap_df <- fread(olap_path)
 							# The actual SNP list output from COJO that was used for conditioning
@@ -107,7 +107,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 	message(glue("{gwas_type}: {nrow(final_gwas_type_long_df)} rows after rsid join"))
   final_gwas_type_long_df <- final_gwas_type_long_df %>%
 		select(`Locus`, `GWAS SNP`, `chromosome_position` = `SNP`, `tissue_set`,
-					 `gtex_cond_type`, `clump_r2`, `z`, `zC`, `p`, `pC`, `in_geno_data`,
+					 `gtex_cond_type`, `clump_r2`, `b`, `bC`, `z`, `zC`, `p`, `pC`, `in_geno_data`,
 					 `in_conditioning_set`) 
 	if (nrow(final_gwas_type_long_df %>% filter(is.na(`GWAS SNP`))) > 0){
 		message("Rogue SNP, inspect `final_gwas_type_long_df`")
@@ -163,9 +163,9 @@ prelim_join_results <- function(gwas_type="ERPOS"){
 
 	write_tsv(return_df, glue("../output/results_long/{gwas_type}_no_clump_or_highest_clump_r2.tsv"))
 	if (gwas_type == "ERPOS"){
-	  og_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S3", range="A2:G791")
+	  og_master <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S3", range="A2:G791")
 	} else if (gwas_type == "ERNEG"){
-		og_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S4", range="A2:G791")
+		og_master <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S4", range="A2:G251")
 	}
 	for (cond_type in COND_TYPES){
 		# return_df_wide <- return_df %>%
@@ -176,7 +176,7 @@ prelim_join_results <- function(gwas_type="ERPOS"){
 			filter(gtex_cond_type == cond_type) %>%
 			select(-gtex_cond_type)
 
-		write_tsv(left_join(og_master, return_df_ctype %>% mutate(`Locus` = str_replace(Locus, "_", " "))), glue("../output/results_wide/joined_to_s3s4/{gwas_type}_gtex_{cond_type}_COJO_joined_to_original_sup_tables.tsv"))
+		write_tsv(left_join(og_master, return_df_ctype %>% mutate(`Locus` = str_replace(Locus, "_", " "))), glue("../output/results_wide/joined_to_s3s4/{gwas_type}_gtex_{cond_type}_COJO_joined_to_original_sup_table.tsv"))
 	}
 }
 
@@ -188,4 +188,6 @@ if (interactive()){
 } else {
 	make_results_long("ERNEG")
 	make_results_long()
+	prelim_join_results("ERNEG")
+	prelim_join_results()
 }

@@ -4,7 +4,7 @@ main <- function(){
 	require(readxl)
 	require(glue)
 
-	erpos_genes <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S3", range="A2:G791") %>%
+	erpos_genes <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S3", range="A2:G791") %>%
 		filter(`Region of TWAS or GWAS signals` == "Both") %>%
 		filter(!is.na(`TWAS gene`)) %>%
 		mutate(chr_num = str_extract(Locus, "^\\d{1,2}")) %>%
@@ -12,7 +12,7 @@ main <- function(){
 		select(`chromosome`, `TWAS gene`) %>%
 		distinct()
 
-	erneg_genes <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S4", range="A2:G791") %>%
+	erneg_genes <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S4", range="A2:G251") %>%
 		filter(`Region of TWAS or GWAS signals` == "Both") %>%
 		filter(!is.na(`TWAS gene`)) %>%
 		mutate(chr_num = str_extract(Locus, "^\\d{1,2}")) %>%

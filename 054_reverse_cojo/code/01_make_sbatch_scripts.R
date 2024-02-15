@@ -31,7 +31,7 @@ main <- function(tiss_path="../input/tissue_lists/11tiss.txt"){
 													 fill=T) %>%
 	  select(`Chromosome`, `hg38 position`, `Index SNP`)
 
-	erpos_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S3", range="A2:G791") %>%
+	erpos_master <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S3", range="A2:G791") %>%
 		filter(`Region of TWAS or GWAS signals` == "Both") %>%
 		mutate(chr_num = str_extract(Locus, "^\\d{1,2}")) %>%
 		mutate(chromosome = glue("chr{chr_num}")) %>%
@@ -40,7 +40,7 @@ main <- function(tiss_path="../input/tissue_lists/11tiss.txt"){
 		mutate(chromosome_position=glue("chr{Chromosome}_{`hg38 position`}"),
 					 Locus = str_replace(Locus, " ", "_"))
 
-	erneg_master <- read_excel("../input/Supplementary_Tables_2023-07-02.xlsx", sheet="TABLE S4", range="A2:G791") %>%
+	erneg_master <- read_excel("../input/Additional_File_1_2024Feb13.xlsx", sheet="TABLE S4", range="A2:G251") %>%
 		filter(`Region of TWAS or GWAS signals` == "Both") %>%
 		mutate(chr_num = str_extract(Locus, "^\\d{1,2}")) %>%
 		mutate(chromosome = glue("chr{chr_num}")) %>%
@@ -111,9 +111,9 @@ main <- function(tiss_path="../input/tissue_lists/11tiss.txt"){
 		uniq_loci <- cur_master$`Locus` %>% unique()
 
 		if (gwas_type == "ERPOS"){
-			ma_path <- "../input/meta_analysis_BCAC_CIMBA_erneg_brca_gwas.ma"
-		} else if (gwas_type == "ERNEG"){
 			ma_path <- "../input/BCAC_ERPOS_BreastCancer_EUR_gwas.ma"
+		} else if (gwas_type == "ERNEG"){
+			ma_path <- "../input/meta_analysis_BCAC_CIMBA_erneg_brca_gwas.ma"
 		}
 
 		for (cur_loci in uniq_loci){
