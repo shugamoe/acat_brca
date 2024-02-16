@@ -9,9 +9,9 @@ make_results_long <- function(gwas_type="ERPOS"){
 	require(glue)
 	require(readxl)
 
-	if (file.exists(glue("../output/results_long/{gwas_type}_all_results.tsv"))){
-		return()
-	}
+	#if (file.exists(glue("../output/results_long/{gwas_type}_all_results.tsv"))){
+		#return()
+	# }
 
   gwas_type_master_df <- fread(glue("../output/{gwas_type}_master.tsv"))
 
@@ -83,6 +83,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 							} else {
 								next
 							}
+
 						}
 						add_to_final <- add_to_final %>%
 							mutate(tissue_set = tiss_prefix, 
@@ -92,6 +93,42 @@ make_results_long <- function(gwas_type="ERPOS"){
 										 gtex_cond_type = cond_type
 										 )
 
+						# Check for mismatched by frequency SNPs
+						bad_freq_path <- file.path(cojo_dir, glue("{cojo_run_id}.freq.badsnps"))
+						if (file.exists(bad_freq_path)){
+							bad_freq_df <- fread(bad_freq_path) %>%
+								select(`SNP`) %>%
+								mutate(freq_mismatch = T) %>%
+								mutate(in_geno_data = TRUE)
+							add_to_final <- add_to_final %>%
+								bind_rows(bad_freq_df) %>%
+								mutate(freq_mismatch = case_when(is.na(freq_mismatch) ~ F,
+																								 TRUE ~ TRUE))
+
+							num_mismatch <- sum(add_to_final$freq_mismatch)
+							if (num_mismatch > 0){
+							  message(glue("{cojo_run_id} has {num_mismatch} SNPs with mismatching frequencies"))
+							}
+						} else {
+							add_to_final <- add_to_final %>%
+								mutate(freq_mismatch=F)
+						}
+
+						if ("bC" %in% names(add_to_final)){
+							add_to_final <- add_to_final %>%
+									mutate(high_multivar_corr = case_when((is.na(`bC`) & !isTRUE(freq_mismatch)) ~ TRUE,
+																										TRUE ~ FALSE))
+							num_high_multivar_corr <- sum(add_to_final$high_multivar_corr)
+							if (num_high_multivar_corr > 0){
+								# message(glue("{cojo_run_id} has {num_high_multivar_corr} SNPs with high multivariate correlation with cond. SNPs"))
+							}
+						}
+
+						add_to_final <- add_to_final %>%
+							mutate(in_geno_data = case_when(isTRUE(in_geno_data) ~ TRUE,
+																							TRUE ~ FALSE))
+
+
 						final_gwas_type_long_df <- bind_rows(final_gwas_type_long_df, add_to_final)
 					}
 				}
@@ -99,6 +136,9 @@ make_results_long <- function(gwas_type="ERPOS"){
 		}
 	}
 	message(glue("Gathered results for {gwas_type}"))
+	final_gwas_type_long_df <- final_gwas_type_long_df %>%
+		mutate(high_multivar_corr = case_when(is.na(high_multivar_corr) ~ FALSE,
+																					TRUE ~ TRUE))
 
 	message(glue("{gwas_type}: {nrow(final_gwas_type_long_df)} rows before rsid join"))
 	final_gwas_type_long_df <- final_gwas_type_long_df %>%
@@ -107,11 +147,16 @@ make_results_long <- function(gwas_type="ERPOS"){
 	message(glue("{gwas_type}: {nrow(final_gwas_type_long_df)} rows after rsid join"))
   final_gwas_type_long_df <- final_gwas_type_long_df %>%
 		select(`Locus`, `GWAS SNP`, `chromosome_position` = `SNP`, `tissue_set`,
-					 `gtex_cond_type`, `clump_r2`, `b`, `bC`, `z`, `zC`, `p`, `pC`, `in_geno_data`,
+					 `gtex_cond_type`, `clump_r2`, `b`, `bC`, `z`, `zC`, `p`, `pC`,
+					 `in_geno_data`, `freq_mismatch`, `high_multivar_corr`,
 					 `in_conditioning_set`) 
 	if (nrow(final_gwas_type_long_df %>% filter(is.na(`GWAS SNP`))) > 0){
-		message("Rogue SNP, inspect `final_gwas_type_long_df`")
-	  browser()
+		final_gwas_type_long_df <- final_gwas_type_long_df %>%
+			filter(!is.na(`GWAS SNP`) & !isTRUE(freq_mismatch))
+		if (nrow(final_gwas_type_long_df %>% filter(is.na(`GWAS SNP`))) > 0){
+			message("Rogue SNP, inspect `final_gwas_type_long_df`")
+			browser()
+		}
 	}
 	write_tsv(final_gwas_type_long_df, glue("../output/results_long/{gwas_type}_all_results.tsv"))
 }
