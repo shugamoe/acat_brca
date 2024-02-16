@@ -103,7 +103,8 @@ make_results_long <- function(gwas_type="ERPOS"){
 							add_to_final <- add_to_final %>%
 								bind_rows(bad_freq_df) %>%
 								mutate(freq_mismatch = case_when(is.na(freq_mismatch) ~ F,
-																								 TRUE ~ TRUE))
+																								 freq_mismatch == TRUE ~ TRUE,
+																								 TRUE ~ FALSE))
 
 							num_mismatch <- sum(add_to_final$freq_mismatch)
 							if (num_mismatch > 0){
@@ -115,9 +116,15 @@ make_results_long <- function(gwas_type="ERPOS"){
 						}
 
 						if ("bC" %in% names(add_to_final)){
-							add_to_final <- add_to_final %>%
-									mutate(high_multivar_corr = case_when((is.na(`bC`) & !isTRUE(freq_mismatch)) ~ TRUE,
-																										TRUE ~ FALSE))
+							if ("in_conditioning_set" %in% names(add_to_final)){
+								add_to_final <- add_to_final %>%
+										mutate(high_multivar_corr = case_when((is.na(`bC`) & !(freq_mismatch == TRUE) & !(in_conditioning_set == TRUE)) ~ TRUE,
+																											TRUE ~ FALSE))
+							} else {
+								add_to_final <- add_to_final %>%
+										mutate(high_multivar_corr = case_when((is.na(`bC`) & !(freq_mismatch == TRUE)) ~ TRUE,
+																											TRUE ~ FALSE))
+							}
 							num_high_multivar_corr <- sum(add_to_final$high_multivar_corr)
 							if (num_high_multivar_corr > 0){
 								# message(glue("{cojo_run_id} has {num_high_multivar_corr} SNPs with high multivariate correlation with cond. SNPs"))
@@ -125,7 +132,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 						}
 
 						add_to_final <- add_to_final %>%
-							mutate(in_geno_data = case_when(isTRUE(in_geno_data) ~ TRUE,
+							mutate(in_geno_data = case_when((in_geno_data == TRUE) ~ TRUE,
 																							TRUE ~ FALSE))
 
 
@@ -138,7 +145,12 @@ make_results_long <- function(gwas_type="ERPOS"){
 	message(glue("Gathered results for {gwas_type}"))
 	final_gwas_type_long_df <- final_gwas_type_long_df %>%
 		mutate(high_multivar_corr = case_when(is.na(high_multivar_corr) ~ FALSE,
-																					TRUE ~ TRUE))
+																					high_multivar_corr == TRUE ~ TRUE,
+																					TRUE ~ FALSE),
+					 in_conditioning_set = case_when(is.na(in_conditioning_set) ~ FALSE,
+																					 in_conditioning_set == TRUE ~ TRUE,
+																					 TRUE ~ FALSE)
+					 )
 
 	message(glue("{gwas_type}: {nrow(final_gwas_type_long_df)} rows before rsid join"))
 	final_gwas_type_long_df <- final_gwas_type_long_df %>%
@@ -152,7 +164,7 @@ make_results_long <- function(gwas_type="ERPOS"){
 					 `in_conditioning_set`) 
 	if (nrow(final_gwas_type_long_df %>% filter(is.na(`GWAS SNP`))) > 0){
 		final_gwas_type_long_df <- final_gwas_type_long_df %>%
-			filter(!is.na(`GWAS SNP`) & !isTRUE(freq_mismatch))
+			filter(!is.na(`GWAS SNP`) & !(freq_mismatch == TRUE))
 		if (nrow(final_gwas_type_long_df %>% filter(is.na(`GWAS SNP`))) > 0){
 			message("Rogue SNP, inspect `final_gwas_type_long_df`")
 			browser()
